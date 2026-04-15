@@ -4,10 +4,17 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { DataSource } from "typeorm";
 import { FactoryService } from "../src/factory.service";
-import { FactoryBuilder } from "../src/factory-builder";
+
 import { Sequence } from "../src/sequence";
 import { FACTORY_OPTIONS } from "../src/factory.constants";
-import { User, Post, UserFactory, PostFactory, CommentFactory, UserFactoryWithHooks } from "./helpers/test-entities";
+import {
+  User,
+  Post,
+  UserFactory,
+  PostFactory,
+  CommentFactory,
+  UserFactoryWithHooks,
+} from "./helpers/test-entities";
 
 describe("FactoryBuilder", () => {
   let module: TestingModule;
@@ -27,7 +34,12 @@ describe("FactoryBuilder", () => {
         {
           provide: FACTORY_OPTIONS,
           useValue: {
-            factories: [UserFactory, PostFactory, CommentFactory, UserFactoryWithHooks],
+            factories: [
+              UserFactory,
+              PostFactory,
+              CommentFactory,
+              UserFactoryWithHooks,
+            ],
           },
         },
         FactoryService,
@@ -80,13 +92,18 @@ describe("FactoryBuilder", () => {
       expect(user.name).toBeDefined();
 
       const dataSource = module.get<DataSource>(DataSource);
-      const found = await dataSource.getRepository(User).findOneBy({ id: user.id });
+      const found = await dataSource
+        .getRepository(User)
+        .findOneBy({ id: user.id });
       expect(found).toBeDefined();
       expect(found!.name).toBe(user.name);
     });
 
     it("should return an array when count > 1", async () => {
-      const users = (await service.use(UserFactory).count(3).create()) as User[];
+      const users = (await service
+        .use(UserFactory)
+        .count(3)
+        .create()) as User[];
       expect(users).toHaveLength(3);
       expect(users[0].id).toBeDefined();
     });
@@ -103,25 +120,34 @@ describe("FactoryBuilder", () => {
 
   describe("state()", () => {
     it("should apply named state method", async () => {
-      const user = (await service.use(UserFactory).state("admin").make()) as User;
+      const user = (await service
+        .use(UserFactory)
+        .state("admin")
+        .make()) as User;
       expect(user.role).toBe("admin");
     });
 
     it("should ignore non-existent named state", async () => {
-      const user = (await service.use(UserFactory).state("nonExistentState").make()) as User;
+      const user = (await service
+        .use(UserFactory)
+        .state("nonExistentState")
+        .make()) as User;
       expect(user).toBeDefined();
       expect(user.role).toBe("user");
     });
 
     it("should apply object state", async () => {
-      const user = (await service.use(UserFactory).state({ role: "moderator" }).make()) as User;
+      const user = (await service
+        .use(UserFactory)
+        .state({ role: "moderator" })
+        .make()) as User;
       expect(user.role).toBe("moderator");
     });
 
     it("should apply function state", async () => {
       const user = (await service
         .use(UserFactory)
-        .state((faker) => ({ name: "Custom Name" }))
+        .state(() => ({ name: "Custom Name" }))
         .make()) as User;
       expect(user.name).toBe("Custom Name");
     });
@@ -161,7 +187,10 @@ describe("FactoryBuilder", () => {
       const users = (await service
         .use(UserFactory)
         .count(3)
-        .sequence("email", Sequence.from((i) => `user${i}@test.com`))
+        .sequence(
+          "email",
+          Sequence.from((i) => `user${i}@test.com`),
+        )
         .make()) as User[];
 
       expect(users[0].email).toBe("user0@test.com");
@@ -172,7 +201,10 @@ describe("FactoryBuilder", () => {
     it("should be overridden by override()", async () => {
       const user = (await service
         .use(UserFactory)
-        .sequence("email", Sequence.from((i) => `user${i}@test.com`))
+        .sequence(
+          "email",
+          Sequence.from((i) => `user${i}@test.com`),
+        )
         .override({ email: "forced@test.com" })
         .make()) as User;
 

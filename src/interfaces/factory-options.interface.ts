@@ -13,5 +13,7 @@ export interface FactoryModuleOptions {
 export interface FactoryAsyncOptions {
   imports?: any[];
   inject?: any[];
-  useFactory?: (...args: any[]) => Promise<FactoryModuleOptions> | FactoryModuleOptions;
+  useFactory?: (
+    ...args: any[]
+  ) => Promise<FactoryModuleOptions> | FactoryModuleOptions;
 }

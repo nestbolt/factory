@@ -2,13 +2,20 @@ import "reflect-metadata";
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { Test, TestingModule } from "@nestjs/testing";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { DataSource } from "typeorm";
 import { FactoryService } from "../src/factory.service";
 import { FactoryBuilder } from "../src/factory-builder";
 import { FactoryNotRegisteredException } from "../src/exceptions/factory-not-registered.exception";
 import { FactoryNotInitializedException } from "../src/exceptions/factory-not-initialized.exception";
 import { FACTORY_OPTIONS } from "../src/factory.constants";
-import { User, Post, Comment, UserFactory, PostFactory, CommentFactory, DatabaseSeeder } from "./helpers/test-entities";
+import {
+  User,
+  Post,
+  Comment,
+  UserFactory,
+  PostFactory,
+  CommentFactory,
+  DatabaseSeeder,
+} from "./helpers/test-entities";
 
 describe("FactoryService", () => {
   let module: TestingModule;
@@ -66,7 +73,9 @@ describe("FactoryService", () => {
           return {};
         }
       }
-      expect(() => service.use(UnregisteredFactory as any)).toThrow(FactoryNotRegisteredException);
+      expect(() => service.use(UnregisteredFactory as any)).toThrow(
+        FactoryNotRegisteredException,
+      );
     });
   });
 
@@ -152,7 +161,9 @@ describe("FactoryService", () => {
   describe("FactoryNotInitializedException", () => {
     it("should have correct message and name", () => {
       const error = new FactoryNotInitializedException();
-      expect(error.message).toContain("FactoryService has not been initialized");
+      expect(error.message).toContain(
+        "FactoryService has not been initialized",
+      );
       expect(error.name).toBe("FactoryNotInitializedException");
       expect(error).toBeInstanceOf(Error);
     });
@@ -200,7 +211,9 @@ describe("FactoryService", () => {
 
       expect(emitted.length).toBeGreaterThan(0);
       expect(emitted[0].event).toBe("factory.seed.all.started");
-      expect(emitted[emitted.length - 1].event).toBe("factory.seed.all.completed");
+      expect(emitted[emitted.length - 1].event).toBe(
+        "factory.seed.all.completed",
+      );
 
       await eventModule.close();
     });

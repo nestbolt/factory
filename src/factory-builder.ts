@@ -5,7 +5,8 @@ import type { Sequence } from "./sequence";
 
 export class FactoryBuilder<T> {
   private _count = 1;
-  private _states: (string | Partial<T> | ((faker: Faker) => Partial<T>))[] = [];
+  private _states: (string | Partial<T> | ((faker: Faker) => Partial<T>))[] =
+    [];
   private _overrides: Partial<T> = {};
   private _sequences: Map<keyof T, Sequence> = new Map();
   private _afterCreating: ((entity: T, faker: Faker) => Promise<void>)[] = [];
@@ -22,7 +23,9 @@ export class FactoryBuilder<T> {
     return this;
   }
 
-  state(stateOrOverrides: string | Partial<T> | ((faker: Faker) => Partial<T>)): this {
+  state(
+    stateOrOverrides: string | Partial<T> | ((faker: Faker) => Partial<T>),
+  ): this {
     this._states.push(stateOrOverrides);
     return this;
   }
@@ -110,7 +113,9 @@ export class FactoryBuilder<T> {
 
     if (persist) {
       if (!this.dataSource) {
-        throw new Error("DataSource is not available. Cannot persist entities without a database connection.");
+        throw new Error(
+          "DataSource is not available. Cannot persist entities without a database connection.",
+        );
       }
       const repo = this.dataSource.getRepository(EntityClass);
       const saved = await repo.save(entity as any);

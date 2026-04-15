@@ -163,7 +163,8 @@ describe("Seeder", () => {
       }).compile();
 
       await noSeederModule.init();
-      const noSeederService = noSeederModule.get<FactoryService>(FactoryService);
+      const noSeederService =
+        noSeederModule.get<FactoryService>(FactoryService);
 
       await expect(noSeederService.seed()).resolves.toBeUndefined();
 
