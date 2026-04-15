@@ -2,7 +2,7 @@
   "name": "@nestbolt/factory",
   "version": "0.1.0",
   "packageManager": "pnpm@9.15.4",
-  "description": "Laravel-like model factories and database seeders for NestJS with TypeORM.",
+  "description": "Model factories and database seeders for NestJS with TypeORM.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {

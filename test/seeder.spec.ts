@@ -140,6 +140,84 @@ describe("Seeder", () => {
     });
   });
 
+  describe("seed() with no seeders", () => {
+    it("should complete without error when no seeders configured", async () => {
+      const noSeederModule = await Test.createTestingModule({
+        imports: [
+          TypeOrmModule.forRoot({
+            type: "better-sqlite3",
+            database: ":memory:",
+            entities: [User],
+            synchronize: true,
+          }),
+        ],
+        providers: [
+          {
+            provide: FACTORY_OPTIONS,
+            useValue: {
+              factories: [UserFactory],
+            },
+          },
+          FactoryService,
+        ],
+      }).compile();
+
+      await noSeederModule.init();
+      const noSeederService = noSeederModule.get<FactoryService>(FactoryService);
+
+      await expect(noSeederService.seed()).resolves.toBeUndefined();
+
+      await noSeederModule.close();
+    });
+  });
+
+  describe("seeders without order property", () => {
+    it("should default order to 0", async () => {
+      const executionOrder: string[] = [];
+
+      class NoOrderSeederA implements Seeder {
+        async run() {
+          executionOrder.push("A");
+        }
+      }
+
+      class NoOrderSeederB implements Seeder {
+        async run() {
+          executionOrder.push("B");
+        }
+      }
+
+      const orderedModule = await Test.createTestingModule({
+        imports: [
+          TypeOrmModule.forRoot({
+            type: "better-sqlite3",
+            database: ":memory:",
+            entities: [User],
+            synchronize: true,
+          }),
+        ],
+        providers: [
+          {
+            provide: FACTORY_OPTIONS,
+            useValue: {
+              factories: [UserFactory],
+              seeders: [NoOrderSeederA, NoOrderSeederB],
+            },
+          },
+          FactoryService,
+        ],
+      }).compile();
+
+      await orderedModule.init();
+      const orderedService = orderedModule.get<FactoryService>(FactoryService);
+
+      await orderedService.seed();
+      expect(executionOrder).toEqual(["A", "B"]);
+
+      await orderedModule.close();
+    });
+  });
+
   describe("seeder creates expected data", () => {
     it("should create users with expected fields", async () => {
       await service.runSeeder(DatabaseSeeder);

@@ -1,6 +1,6 @@
 <p align="center">
     <h1 align="center">@nestbolt/factory</h1>
-    <p align="center">Laravel-like model factories and database seeders for NestJS with TypeORM.</p>
+    <p align="center">Model factories and database seeders for NestJS with TypeORM.</p>
 </p>
 
 <p align="center">
@@ -406,10 +406,6 @@ Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
 ## Security
 
 If you discover any security-related issues, please report them via [GitHub Issues](https://github.com/nestbolt/factory/issues) with the **security** label instead of using the public issue tracker.
-
-## Credits
-
-- Inspired by [Laravel's](https://laravel.com) model factories and [database seeders](https://laravel.com/docs/seeding)
 
 ## License
 

@@ -6,8 +6,9 @@ import { DataSource } from "typeorm";
 import { FactoryService } from "../src/factory.service";
 import { FactoryBuilder } from "../src/factory-builder";
 import { FactoryNotRegisteredException } from "../src/exceptions/factory-not-registered.exception";
+import { FactoryNotInitializedException } from "../src/exceptions/factory-not-initialized.exception";
 import { FACTORY_OPTIONS } from "../src/factory.constants";
-import { User, Post, Comment, UserFactory, PostFactory, CommentFactory } from "./helpers/test-entities";
+import { User, Post, Comment, UserFactory, PostFactory, CommentFactory, DatabaseSeeder } from "./helpers/test-entities";
 
 describe("FactoryService", () => {
   let module: TestingModule;
@@ -145,6 +146,63 @@ describe("FactoryService", () => {
       await module.close();
       expect(FactoryService.getInstance()).toBeNull();
       module = undefined as any;
+    });
+  });
+
+  describe("FactoryNotInitializedException", () => {
+    it("should have correct message and name", () => {
+      const error = new FactoryNotInitializedException();
+      expect(error.message).toContain("FactoryService has not been initialized");
+      expect(error.name).toBe("FactoryNotInitializedException");
+      expect(error).toBeInstanceOf(Error);
+    });
+  });
+
+  describe("eventEmitter integration", () => {
+    it("should emit events when eventEmitter is provided", async () => {
+      const emitted: { event: string; payload: any }[] = [];
+      const mockEventEmitter = {
+        emit(event: string, payload: any) {
+          emitted.push({ event, payload });
+          return true;
+        },
+      };
+
+      const eventModule = await Test.createTestingModule({
+        imports: [
+          TypeOrmModule.forRoot({
+            type: "better-sqlite3",
+            database: ":memory:",
+            entities: [User, Post, Comment],
+            synchronize: true,
+          }),
+        ],
+        providers: [
+          {
+            provide: FACTORY_OPTIONS,
+            useValue: {
+              factories: [UserFactory, PostFactory, CommentFactory],
+              seeders: [DatabaseSeeder],
+            },
+          },
+          {
+            provide: "EventEmitter2",
+            useValue: mockEventEmitter,
+          },
+          FactoryService,
+        ],
+      }).compile();
+
+      await eventModule.init();
+      const eventService = eventModule.get<FactoryService>(FactoryService);
+
+      await eventService.seed();
+
+      expect(emitted.length).toBeGreaterThan(0);
+      expect(emitted[0].event).toBe("factory.seed.all.started");
+      expect(emitted[emitted.length - 1].event).toBe("factory.seed.all.completed");
+
+      await eventModule.close();
     });
   });
 });

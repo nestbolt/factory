@@ -109,6 +109,30 @@ export class CommentFactory extends BaseFactory<Comment> {
   }
 }
 
+export class UserFactoryWithHooks extends BaseFactory<User> {
+  get entity() {
+    return User;
+  }
+
+  definition(faker: Faker): Partial<User> {
+    return {
+      name: faker.person.fullName(),
+      email: faker.internet.email(),
+      role: "user",
+      age: faker.number.int({ min: 18, max: 65 }),
+      active: true,
+    };
+  }
+
+  async afterMake(entity: User): Promise<void> {
+    entity.name = `[made] ${entity.name}`;
+  }
+
+  async afterCreate(entity: User): Promise<void> {
+    entity.name = `[created] ${entity.name}`;
+  }
+}
+
 export class DatabaseSeeder implements Seeder {
   order = 0;
 
