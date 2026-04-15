@@ -7,7 +7,7 @@ import { FactoryService } from "../src/factory.service";
 import { FactoryBuilder } from "../src/factory-builder";
 import { Sequence } from "../src/sequence";
 import { FACTORY_OPTIONS } from "../src/factory.constants";
-import { User, Post, UserFactory, PostFactory, CommentFactory } from "./helpers/test-entities";
+import { User, Post, UserFactory, PostFactory, CommentFactory, UserFactoryWithHooks } from "./helpers/test-entities";
 
 describe("FactoryBuilder", () => {
   let module: TestingModule;
@@ -27,7 +27,7 @@ describe("FactoryBuilder", () => {
         {
           provide: FACTORY_OPTIONS,
           useValue: {
-            factories: [UserFactory, PostFactory, CommentFactory],
+            factories: [UserFactory, PostFactory, CommentFactory, UserFactoryWithHooks],
           },
         },
         FactoryService,
@@ -105,6 +105,12 @@ describe("FactoryBuilder", () => {
     it("should apply named state method", async () => {
       const user = (await service.use(UserFactory).state("admin").make()) as User;
       expect(user.role).toBe("admin");
+    });
+
+    it("should ignore non-existent named state", async () => {
+      const user = (await service.use(UserFactory).state("nonExistentState").make()) as User;
+      expect(user).toBeDefined();
+      expect(user.role).toBe("user");
     });
 
     it("should apply object state", async () => {
@@ -203,6 +209,45 @@ describe("FactoryBuilder", () => {
 
       expect(callbackEntity).toBeDefined();
       expect(callbackEntity!.name).toBe(user.name);
+    });
+  });
+
+  describe("factory afterMake hook", () => {
+    it("should call factory afterMake when defined", async () => {
+      const user = (await service.use(UserFactoryWithHooks).make()) as User;
+      expect(user.name).toMatch(/^\[made\] /);
+    });
+  });
+
+  describe("factory afterCreate hook", () => {
+    it("should call factory afterCreate when defined", async () => {
+      const user = (await service.use(UserFactoryWithHooks).create()) as User;
+      expect(user.name).toMatch(/^\[created\] /);
+    });
+  });
+
+  describe("create() without DataSource", () => {
+    it("should throw when DataSource is not available", async () => {
+      const noDbModule = await Test.createTestingModule({
+        providers: [
+          {
+            provide: FACTORY_OPTIONS,
+            useValue: {
+              factories: [UserFactory],
+            },
+          },
+          FactoryService,
+        ],
+      }).compile();
+
+      await noDbModule.init();
+      const noDbService = noDbModule.get<FactoryService>(FactoryService);
+
+      await expect(noDbService.use(UserFactory).create()).rejects.toThrow(
+        "DataSource is not available",
+      );
+
+      await noDbModule.close();
     });
   });
 });
